@@ -5,6 +5,7 @@ import ProtectedRoute, { dashboardPath } from './components/ProtectedRoute.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import ExaminerDashboard from './pages/examiner/ExaminerDashboard.jsx';
+import MyQuizzes from './pages/examiner/MyQuizzes.jsx';
 import StudentDashboard from './pages/student/StudentDashboard.jsx';
 
 const HomeRedirect = () => {
@@ -13,7 +14,7 @@ const HomeRedirect = () => {
   return <Navigate to={user ? dashboardPath(user.role) : '/login'} replace />;
 };
 
-// Temporary page for sidebar links we haven't built yet
+// Temporary page for links whose pages we haven't built yet
 const Placeholder = ({ title }) => (
   <div className="hero">
     <h1>{title}</h1>
@@ -28,7 +29,7 @@ const App = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Examiner pages: login + examiner role, inside the sidebar layout */}
+      {/* Examiner pages: must be logged in as examiner, shown inside the sidebar layout */}
       <Route
         element={
           <ProtectedRoute role="examiner">
@@ -37,11 +38,16 @@ const App = () => {
         }
       >
         <Route path="/examiner" element={<ExaminerDashboard />} />
-        <Route path="/examiner/quizzes" element={<Placeholder title="My Quizzes" />} />
+        <Route path="/examiner/quizzes" element={<MyQuizzes />} />
         <Route path="/examiner/quizzes/new" element={<Placeholder title="Create Quiz" />} />
+        <Route path="/examiner/quizzes/:id/edit" element={<Placeholder title="Edit Quiz" />} />
+        <Route
+          path="/examiner/quizzes/:id/leaderboard"
+          element={<Placeholder title="Leaderboard" />}
+        />
       </Route>
 
-      {/* Student pages */}
+      {/* Student pages: must be logged in as student */}
       <Route
         element={
           <ProtectedRoute role="student">

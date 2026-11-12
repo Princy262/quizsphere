@@ -117,3 +117,26 @@ export const deleteQuiz = async (req, res, next) => {
     next(error);
   }
 };
+
+// @route   GET /api/examiner/categories
+// Every category used by ANY examiner's quiz (not just this examiner's)
+export const getAllCategories = async (req, res, next) => {
+  try {
+    const all = await Quiz.distinct('category');
+
+    // "Electrical" and "electrical" count as one category
+    const unique = new Map();
+    for (const category of all) {
+      const key = category.toLowerCase();
+      if (!unique.has(key)) unique.set(key, category);
+    }
+
+    const categories = [...unique.values()].sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: 'base' })
+    );
+
+    res.json({ count: categories.length, categories });
+  } catch (error) {
+    next(error);
+  }
+};

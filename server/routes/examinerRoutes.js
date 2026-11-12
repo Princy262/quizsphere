@@ -7,6 +7,7 @@ import {
   getMyQuizById,
   updateQuiz,
   deleteQuiz,
+  getAllCategories,
 } from '../controllers/quizController.js';
 import { getLeaderboard } from '../controllers/leaderboardController.js';
 
@@ -19,6 +20,7 @@ router.use(protect, authorize('examiner'));
 router.get('/ping', (req, res) => {
   res.json({ message: `Hello examiner ${req.user.name}` });
 });
+router.get('/categories', getAllCategories);
 
 router.route('/quizzes').post(createQuiz).get(getMyQuizzes);
 

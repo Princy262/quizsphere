@@ -6,7 +6,7 @@ const StudentDashboard = () => {
   return (
     <div>
       <div className="hero">
-        <h1>Hello, {user.name}! 👋</h1>
+        <h1>Hello, {user.name}! </h1>
         <p className="muted">Keep learning, keep growing.</p>
       </div>
 

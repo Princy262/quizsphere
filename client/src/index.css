@@ -633,3 +633,55 @@ h3 {
 .empty-state h3 {
   color: var(--text);
 }
+
+/* ---------- password eye ---------- */
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap .input {
+  padding-right: 46px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.eye-btn:hover {
+  color: var(--primary);
+  background: rgba(var(--shadow-rgb), 0.08);
+}
+
+/* ---------- category filter dropdown ---------- */
+.filter-box {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+  max-width: 320px;
+}
+
+.filter-box svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.select {
+  padding-left: 38px;
+  cursor: pointer;
+}

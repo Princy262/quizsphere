@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { getErrorMessage } from '../api/axios.js';
 import { dashboardPath } from '../components/ProtectedRoute.jsx';
 import { useTheme } from '../utils/useTheme.js';
+import PasswordInput from '../components/PasswordInput.jsx';
 
 const Register = () => {
   const { user, register } = useAuth();
@@ -105,14 +106,11 @@ const Register = () => {
           />
 
           <label className="field-label">Password</label>
-          <input
-            className="input"
-            type="password"
+          <PasswordInput
             name="password"
             value={form.password}
             onChange={handleChange}
             placeholder="At least 6 characters"
-            required
           />
 
           <button className="btn btn-primary btn-block" disabled={submitting}>

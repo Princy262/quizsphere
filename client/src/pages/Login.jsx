@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { getErrorMessage } from '../api/axios.js';
 import { dashboardPath } from '../components/ProtectedRoute.jsx';
 import { useTheme } from '../utils/useTheme.js';
+import PasswordInput from '../components/PasswordInput.jsx';
 
 const Login = () => {
   useTheme('neutral'); // keep hooks above any early return
@@ -61,14 +62,11 @@ const Login = () => {
           />
 
           <label className="field-label">Password</label>
-          <input
-            className="input"
-            type="password"
+          <PasswordInput
             name="password"
             value={form.password}
             onChange={handleChange}
             placeholder="Your password"
-            required
           />
 
           <button className="btn btn-primary btn-block" disabled={submitting}>
