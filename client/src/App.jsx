@@ -1,9 +1,11 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
-import { useTheme } from './utils/useTheme.js';
+import AppLayout from './components/AppLayout.jsx';
 import ProtectedRoute, { dashboardPath } from './components/ProtectedRoute.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import ExaminerDashboard from './pages/examiner/ExaminerDashboard.jsx';
+import StudentDashboard from './pages/student/StudentDashboard.jsx';
 
 const HomeRedirect = () => {
   const { user, loading } = useAuth();
@@ -11,32 +13,13 @@ const HomeRedirect = () => {
   return <Navigate to={user ? dashboardPath(user.role) : '/login'} replace />;
 };
 
-// TEMPORARY: replaced by the real dashboards in the next parts
-const TempDashboard = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  useTheme(user.role);
-
-  return (
-    <div style={{ padding: 40 }}>
-      <div className="card">
-        <h2>Hello, {user.name}</h2>
-        <p className="muted">
-          You are logged in as <b>{user.role}</b>. The real dashboard comes next.
-        </p>
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            logout();
-            navigate('/login');
-          }}
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-  );
-};
+// Temporary page for sidebar links we haven't built yet
+const Placeholder = ({ title }) => (
+  <div className="hero">
+    <h1>{title}</h1>
+    <p className="muted">This page is coming in the next steps.</p>
+  </div>
+);
 
 const App = () => {
   return (
@@ -45,22 +28,30 @@ const App = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
+      {/* Examiner pages: login + examiner role, inside the sidebar layout */}
       <Route
-        path="/examiner"
         element={
           <ProtectedRoute role="examiner">
-            <TempDashboard />
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/examiner" element={<ExaminerDashboard />} />
+        <Route path="/examiner/quizzes" element={<Placeholder title="My Quizzes" />} />
+        <Route path="/examiner/quizzes/new" element={<Placeholder title="Create Quiz" />} />
+      </Route>
+
+      {/* Student pages */}
       <Route
-        path="/student"
         element={
           <ProtectedRoute role="student">
-            <TempDashboard />
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/student" element={<StudentDashboard />} />
+        <Route path="/student/results" element={<Placeholder title="My Results" />} />
+      </Route>
 
       <Route path="*" element={<HomeRedirect />} />
     </Routes>
