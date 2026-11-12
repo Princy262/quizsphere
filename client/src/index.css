@@ -1,0 +1,283 @@
+/* =========================================================
+   THEMES: every color comes from these variables
+   ========================================================= */
+
+/* Neutral: login (deep green + warm peach/coral, role-independent) */
+:root,
+[data-theme='neutral'] {
+  --primary: #1f4e46;
+  --secondary: #f28c5b;
+  --accent: #ffe2cc;
+  --surface: rgba(255, 255, 255, 0.9);
+  --text: #1f2a28;
+  --muted: #6b7c78;
+  --border: #ecd9cb;
+  --shadow-rgb: 31, 78, 70;
+
+  --grad-primary: linear-gradient(135deg, #1f4e46 0%, #2f8f7a 100%);
+  --grad-secondary: linear-gradient(135deg, #f28c5b 0%, #f7b267 100%);
+  --grad-hero: linear-gradient(120deg, #ffd9bd 0%, #ffe9dc 50%, #c8ecdd 100%);
+  --grad-page:
+    radial-gradient(circle at 8% 5%, rgba(255, 183, 134, 0.75) 0, transparent 45%),
+    radial-gradient(circle at 95% 95%, rgba(120, 210, 180, 0.7) 0, transparent 48%),
+    linear-gradient(135deg, #fff3e6 0%, #fde8e0 50%, #d6f1e6 100%);
+}
+
+/* Examiner: warm browns */
+[data-theme='examiner'] {
+  --primary: #5d4037;
+  --secondary: #8d6e63;
+  --accent: #d7b899;
+  --surface: rgba(255, 255, 255, 0.9);
+  --text: #1a1a1a;
+  --muted: #757575;
+  --border: #eadbcb;
+  --shadow-rgb: 93, 64, 55;
+
+  --grad-primary: linear-gradient(135deg, #5d4037 0%, #8d6e63 100%);
+  --grad-secondary: linear-gradient(135deg, #8d6e63 0%, #d7b899 100%);
+  --grad-hero: linear-gradient(120deg, #ffe9d2 0%, #f6d3b3 55%, #ebc09a 100%);
+  --grad-page:
+    radial-gradient(circle at 5% 0%, rgba(251, 227, 204, 0.9) 0, transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(243, 210, 179, 0.8) 0, transparent 42%),
+    linear-gradient(135deg, #fff8f0 0%, #fdebdc 100%);
+}
+
+/* Student: purple + teal */
+[data-theme='student'] {
+  --primary: #7b1fa2;
+  --secondary: #00bcd4;
+  --accent: #b2ebf2;
+  --surface: rgba(255, 255, 255, 0.9);
+  --text: #263238;
+  --muted: #607d8b;
+  --border: #dfe4f5;
+  --shadow-rgb: 123, 31, 162;
+
+  --grad-primary: linear-gradient(135deg, #7b1fa2 0%, #9b59d0 100%);
+  --grad-secondary: linear-gradient(135deg, #00bcd4 0%, #4dd0e1 100%);
+  --grad-hero: linear-gradient(120deg, #ede1fa 0%, #d6d9f7 50%, #bdeff5 100%);
+  --grad-page:
+    radial-gradient(circle at 5% 0%, rgba(237, 225, 250, 0.95) 0, transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(178, 235, 242, 0.9) 0, transparent 45%),
+    linear-gradient(135deg, #f3e8ff 0%, #e0f7fa 100%);
+}
+
+/* =========================================================
+   BASE
+   ========================================================= */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Poppins', system-ui, sans-serif;
+  color: var(--text);
+  background: var(--grad-page);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 8px;
+}
+
+.center-text {
+  text-align: center;
+  margin-top: 60px;
+  color: var(--muted);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* =========================================================
+   REUSABLE PIECES
+   ========================================================= */
+.card {
+  background: var(--surface);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.1);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  color: #fff;
+  background: var(--grad-primary);
+  box-shadow: 0 6px 16px rgba(var(--shadow-rgb), 0.3);
+}
+
+.btn-secondary {
+  color: #fff;
+  background: var(--grad-secondary);
+  box-shadow: 0 6px 16px rgba(var(--shadow-rgb), 0.2);
+}
+
+.btn-block {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.alert {
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.alert-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.field-label {
+  display: block;
+  margin: 14px 0 6px;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  font: inherit;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.input:focus {
+  outline: 3px solid rgba(var(--shadow-rgb), 0.18);
+  border-color: var(--primary);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.logo-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--grad-primary);
+  box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.3);
+}
+
+/* =========================================================
+   AUTH PAGES (login, register)
+   ========================================================= */
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  box-shadow: 0 20px 50px rgba(var(--shadow-rgb), 0.18);
+}
+
+.auth-card .logo {
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.auth-title {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.auth-sub {
+  text-align: center;
+  color: var(--muted);
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+}
+
+.auth-switch {
+  text-align: center;
+  margin: 18px 0 0;
+  font-size: 0.9rem;
+}
+
+.auth-switch a {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.role-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  background: #fff;
+  transition: all 0.2s;
+}
+
+.role-option input {
+  display: none;
+}
+
+.role-option.active {
+  color: #fff;
+  border-color: transparent;
+  background: var(--grad-primary);
+  box-shadow: 0 6px 16px rgba(var(--shadow-rgb), 0.3);
+}
