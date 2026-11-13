@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, HelpCircle, AlertTriangle, Play, Eye } from 'lucide-r
 import api, { getErrorMessage } from '../../api/axios.js';
 import { formatDuration } from '../../utils/formatTime.js';
 import AttemptChart from '../../components/AttemptChart.jsx';
+import PaletteLegend from '../../components/PaletteLegend.jsx';
 
 const STATUS_LABEL = {
   submitted: { text: 'Submitted', warn: false },
@@ -124,12 +125,17 @@ const QuizDetails = () => {
           <li>When the timer reaches 00:00, the quiz is submitted automatically and counts too.</li>
           <li>You can attempt each quiz up to {history.maxAttempts} times. Your best score is kept.</li>
           <li>Correct answers unlock only after you have used all {history.maxAttempts} attempts.</li>
+          <li>
+            Use <b>Mark for review</b> on any question you want to come back to. The question
+            numbers on the quiz screen are colored like this:
+          </li>
         </ul>
+        <PaletteLegend />
       </div>
 
       {history.hasAttemptInProgress && (
         <div className="alert alert-error" style={{ marginTop: 18 }}>
-          You have an attempt in progress. It will be closed automatically within about 30
+          You have an attempt in progress. It will be closed automatically within about 90
           seconds. Refresh this page after that.
         </div>
       )}
@@ -216,7 +222,7 @@ const QuizDetails = () => {
         </div>
       )}
 
-      {/*  private attempt graph */}
+      {/* private attempt graph */}
       {history.attempts.length > 0 && (
         <>
           <div className="section-head" style={{ marginTop: 28 }}>

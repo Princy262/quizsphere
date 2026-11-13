@@ -15,20 +15,13 @@ import AttemptQuiz from './pages/student/AttemptQuiz.jsx';
 import ResultPage from './pages/student/ResultPage.jsx';
 import ReviewAnswers from './pages/student/ReviewAnswers.jsx';
 import AnswerKey from './pages/student/AnswerKey.jsx';
+import MyResults from './pages/student/MyResults.jsx';
 
 const HomeRedirect = () => {
   const { user, loading } = useAuth();
   if (loading) return <p className="center-text">Loading...</p>;
   return <Navigate to={user ? dashboardPath(user.role) : '/login'} replace />;
 };
-
-// Temporary page for links whose pages we haven't built yet
-const Placeholder = ({ title }) => (
-  <div className="hero">
-    <h1>{title}</h1>
-    <p className="muted">This page is coming in the next steps.</p>
-  </div>
-);
 
 const App = () => {
   return (
@@ -71,7 +64,7 @@ const App = () => {
         }
       >
         <Route path="/student" element={<StudentDashboard />} />
-        <Route path="/student/results" element={<Placeholder title="My Results" />} />
+        <Route path="/student/results" element={<MyResults />} />
         <Route path="/student/quizzes/:id" element={<QuizDetails />} />
         <Route path="/student/quizzes/:id/result" element={<ResultPage />} />
         <Route path="/student/quizzes/:id/review" element={<ReviewAnswers />} />

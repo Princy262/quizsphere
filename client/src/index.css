@@ -1328,3 +1328,112 @@ h3 {
 
 .answer-lines .good { color: #047857; }
 .answer-lines .bad { color: #b91c1c; }
+
+/* ---------- status banners on the quiz screen ---------- */
+.alert-warn {
+  background: #fef9c3;
+  color: #713f12;
+  border: 1px solid #fde047;
+}
+
+/* ---------- last 10 seconds: bigger, deeper red timer ---------- */
+.timer {
+  transition: font-size 0.3s, padding 0.3s;
+}
+
+.timer.urgent {
+  font-size: 2.2rem;
+  padding: 12px 26px;
+  background: linear-gradient(135deg, #7f1d1d, #ef4444);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35), 0 10px 30px rgba(239, 68, 68, 0.5);
+  animation: pulse-fast 0.6s infinite;
+}
+
+@keyframes pulse-fast {
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+/* ---------- "Time's up" screen ---------- */
+.timeup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px;
+  background: rgba(127, 29, 29, 0.92);
+  color: #fff;
+}
+
+.timeup-overlay h1 {
+  font-size: 3.2rem;
+  margin: 0 0 8px;
+}
+
+.timeup-overlay p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* ---------- mark for review + legend ---------- */
+.palette-btn.marked {
+  background: #facc15;
+  color: #422006;
+  border-color: transparent;
+}
+
+.mark-btn {
+  background: #fef9c3;
+  color: #713f12;
+}
+
+.mark-btn.on {
+  background: #facc15;
+  color: #422006;
+}
+
+.legend {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.82rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.swatch {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.swatch.green {
+  background: var(--grad-primary);
+  color: #fff;
+  border-color: transparent;
+}
+
+.swatch.yellow {
+  background: #facc15;
+  color: #422006;
+  border-color: transparent;
+}
+
+.swatch.current {
+  border-color: var(--primary);
+  outline: 3px solid rgba(var(--shadow-rgb), 0.3);
+}

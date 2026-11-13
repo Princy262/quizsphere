@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Clock, ChevronLeft, ChevronRight, Send } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, Send, Flag } from 'lucide-react';
 import api, { getErrorMessage } from '../../api/axios.js';
 import { imageUrl } from '../../utils/imageUrl.js';
 import { useTheme } from '../../utils/useTheme.js';
 import { formatDuration } from '../../utils/formatTime.js';
+import PaletteLegend from '../../components/PaletteLegend.jsx';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+//  SERVER_TIMEOUT_SECONDS must match HEARTBEAT_TIMEOUT_SECONDS in server/.env
+const SERVER_TIMEOUT_SECONDS = 90;
+const IDLE_NOTICE_SECONDS = 60; // "Still there?" after this much inactivity
+const CONNECTION_WARN_SECONDS = 10; // connection warning after this much silence
+const URGENT_SECONDS = 10; // big red timer in the last 10 seconds
+const TIMEUP_SHOW_MS = 2000; // how long "Time's up!" shows before submitting
 
 const AttemptScreen = ({ quizId, data }) => {
   useTheme('student');
@@ -18,28 +26,52 @@ const AttemptScreen = ({ quizId, data }) => {
 
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({}); // { questionIndex: [selected option numbers] }
+  const [marked, setMarked] = useState({}); // { questionIndex: true } (only for the student)
   const [remaining, setRemaining] = useState(attempt.remainingSeconds);
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [idleSeconds, setIdleSeconds] = useState(0); // 
+  const [offlineSeconds, setOfflineSeconds] = useState(0); // 
+  const [timeUp, setTimeUp] = useState(false); // 
 
   // Refs hold values that timers and page-close handlers must always see fresh
   const answersRef = useRef({});
   const endedRef = useRef(false); // true once the attempt is over from our side
-  const offsetRef = useRef(0); // ⭐ FIX: no Date.now() during render
+  const offsetRef = useRef(0);
   const expiresRef = useRef(new Date(attempt.expiresAt).getTime());
+  const lastActivityRef = useRef(0); //  last click, key press or mouse move
+  const lastBeatRef = useRef(0); //  last time the server answered a heartbeat
+  const timeUpStartedRef = useRef(false); // 
+  const timeUpTimeoutRef = useRef(null); // 
 
   const goToDetails = useCallback(
     () => navigate(`/student/quizzes/${quizId}`, { replace: true }),
     [navigate, quizId]
   );
 
-  // ⭐ FIX: work out the difference between the server clock and this computer's clock.
-  // This effect is declared first, so it runs before the countdown starts.
+  // Server-vs-computer clock difference, and the start of the idle/connection checks
   useEffect(() => {
     offsetRef.current = new Date(attempt.serverTime).getTime() - Date.now();
+    lastActivityRef.current = Date.now();
+    lastBeatRef.current = Date.now();
   }, [attempt.serverTime]);
 
-  // ---------- submit (manual or when the timer hits 0) ----------
+  //  remember when the student last did anything
+  useEffect(() => {
+    const touch = () => {
+      lastActivityRef.current = Date.now();
+    };
+    const events = ['pointerdown', 'pointermove', 'keydown', 'scroll', 'touchstart'];
+    events.forEach((e) => window.addEventListener(e, touch, { passive: true }));
+    return () => events.forEach((e) => window.removeEventListener(e, touch));
+  }, []);
+
+  //  cancel the pending auto-submit if the page is left
+  useEffect(() => {
+    return () => clearTimeout(timeUpTimeoutRef.current);
+  }, []);
+
+  // ---------- submit (manual or when time is up) ----------
   const finish = useCallback(async () => {
     if (endedRef.current) return;
     endedRef.current = true;
@@ -59,10 +91,8 @@ const AttemptScreen = ({ quizId, data }) => {
       });
     } catch (err) {
       if (err.response) {
-        // The server already ended it (for example the time ran out)
-        goToDetails();
+        goToDetails(); // the server already ended it
       } else {
-        // No connection: allow another try in a few seconds
         setMessage('Cannot reach the server. Retrying...');
         setSubmitting(false);
         setTimeout(() => {
@@ -72,44 +102,52 @@ const AttemptScreen = ({ quizId, data }) => {
     }
   }, [attemptId, navigate, quizId, goToDetails]);
 
-  // ---------- countdown ----------
+  // ---------- countdown (also drives the banners and the Time's up screen) ----------
   useEffect(() => {
-    // ⭐ FIX: no immediate tick(). `remaining` already starts at the server value,
-    // and the interval below takes over within 250 ms.
     const id = setInterval(() => {
-      const left = Math.max(
-        0,
-        Math.ceil((expiresRef.current - (Date.now() + offsetRef.current)) / 1000)
-      );
+      const now = Date.now();
+
+      const left = Math.max(0, Math.ceil((expiresRef.current - (now + offsetRef.current)) / 1000));
       setRemaining(left);
-      if (left <= 0) finish();
+
+      // 
+      setIdleSeconds(Math.floor((now - lastActivityRef.current) / 1000));
+      setOfflineSeconds(Math.floor((now - lastBeatRef.current) / 1000));
+
+      //  show "Time's up!" first, then submit 2 seconds later
+      if (left <= 0 && !timeUpStartedRef.current && !endedRef.current) {
+        timeUpStartedRef.current = true;
+        setTimeUp(true);
+        timeUpTimeoutRef.current = setTimeout(finish, TIMEUP_SHOW_MS);
+      }
     }, 250);
     return () => clearInterval(id);
   }, [finish]);
 
-  // ---------- heartbeat: tells the server "I am still here" ----------
+  // ---------- heartbeat: tells the server "I am still here" (every 5 seconds) ----------
   useEffect(() => {
     const beat = async () => {
       if (endedRef.current) return;
       try {
         const { data: hb } = await api.post(`/student/attempts/${attemptId}/heartbeat`);
         offsetRef.current = new Date(hb.serverTime).getTime() - Date.now();
+        lastBeatRef.current = Date.now(); //  the server answered, so we are connected
       } catch (err) {
         if (err.response?.status === 409) {
-          // The attempt already ended (refresh, timeout, ...)
           endedRef.current = true;
           goToDetails();
         }
+        // No response at all = connection problem. lastBeatRef is not updated,
+        // so the warning banner appears after a few seconds.
       }
     };
     beat();
-    const id = setInterval(beat, 10000);
+    const id = setInterval(beat, 5000);
     return () => clearInterval(id);
   }, [attemptId, goToDetails]);
 
   // ---------- leaving the page = submit ----------
   useEffect(() => {
-    // Sends the "leave" request even while the page is closing
     const leaveNow = () => {
       if (endedRef.current) return;
       endedRef.current = true;
@@ -123,12 +161,12 @@ const AttemptScreen = ({ quizId, data }) => {
     const warn = (e) => {
       if (endedRef.current) return;
       e.preventDefault();
-      e.returnValue = ''; // makes the browser show its "Leave site?" popup
+      e.returnValue = '';
     };
 
     window.addEventListener('beforeunload', warn);
-    window.addEventListener('pagehide', leaveNow); // tab closed or refreshed
-    window.addEventListener('popstate', leaveNow); // browser back button
+    window.addEventListener('pagehide', leaveNow);
+    window.addEventListener('popstate', leaveNow);
 
     return () => {
       window.removeEventListener('beforeunload', warn);
@@ -137,10 +175,17 @@ const AttemptScreen = ({ quizId, data }) => {
     };
   }, [attemptId]);
 
-  // ---------- choosing answers (saved to the server on every click) ----------
+  // ---------- answers (saved to the server on every click) ----------
   const saveAnswer = (qi, selected) => {
+    if (timeUpStartedRef.current) return; // no changes once time is up
+
     answersRef.current = { ...answersRef.current, [qi]: selected };
     setAnswers(answersRef.current);
+
+    //  answering a question removes its "marked for review"
+    if (selected.length > 0) {
+      setMarked((m) => ({ ...m, [qi]: false }));
+    }
 
     api
       .patch(`/student/attempts/${attemptId}/answers`, { questionIndex: qi, selected })
@@ -154,7 +199,7 @@ const AttemptScreen = ({ quizId, data }) => {
       });
   };
 
-   const choose = (qi, oi) => {
+  const choose = (qi, oi) => {
     const previous = answersRef.current[qi] || [];
     const next = previous.includes(oi)
       ? previous.filter((x) => x !== oi)
@@ -162,23 +207,51 @@ const AttemptScreen = ({ quizId, data }) => {
     saveAnswer(qi, next);
   };
 
+  // only unanswered questions can be marked for review
+  const toggleMark = (qi) => {
+    if ((answersRef.current[qi] || []).length > 0) return;
+    setMarked((m) => ({ ...m, [qi]: !m[qi] }));
+  };
+
   const handleSubmitClick = () => {
     const answered = Object.values(answers).filter((a) => a.length > 0).length;
     const unanswered = questions.length - answered;
-    const ok = window.confirm(
-      unanswered > 0
-        ? `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}.\n\nSubmit anyway? This uses one attempt.`
-        : 'Submit your quiz? This uses one attempt.'
-    );
-    if (ok) finish();
+    const markedCount = Object.values(marked).filter(Boolean).length;
+
+    let text = 'Submit your quiz? This uses one attempt.';
+    if (unanswered > 0 || markedCount > 0) {
+      const parts = [];
+      if (unanswered > 0) parts.push(`${unanswered} unanswered`);
+      if (markedCount > 0) parts.push(`${markedCount} marked for review`);
+      text = `You still have ${parts.join(' and ')}.\n\nSubmit anyway? This uses one attempt.`;
+    }
+
+    if (window.confirm(text)) finish();
   };
 
   const q = questions[current];
   const selected = answers[current] || [];
   const answeredCount = Object.values(answers).filter((a) => a.length > 0).length;
+  const markedCount = Object.values(marked).filter(Boolean).length;
+
+  //  which banners and timer style to show
+  const connectionLost = offlineSeconds >= CONNECTION_WARN_SECONDS;
+  const secondsUntilAutoSubmit = Math.max(0, SERVER_TIMEOUT_SECONDS - offlineSeconds);
+  const showIdle = !connectionLost && idleSeconds >= IDLE_NOTICE_SECONDS;
+  const urgent = remaining <= URGENT_SECONDS;
 
   return (
     <div className="attempt-page">
+      {/*  Time's up screen */}
+      {timeUp && (
+        <div className="timeup-overlay">
+          <div>
+            <h1>⏰ Time's up!</h1>
+            <p>Submitting your quiz...</p>
+          </div>
+        </div>
+      )}
+
       <div className="attempt-top">
         <h2>
           {quiz.title}
@@ -192,20 +265,49 @@ const AttemptScreen = ({ quizId, data }) => {
             </span>
           )}
         </h2>
-        <div className={`timer ${remaining <= 60 ? 'low' : ''}`}>
-          <Clock size={20} /> {formatDuration(remaining)}
+        <div className={`timer ${remaining <= 60 ? 'low' : ''} ${urgent ? 'urgent' : ''}`}>
+          <Clock size={urgent ? 26 : 20} /> {formatDuration(remaining)}
         </div>
       </div>
 
       {message && <div className="alert alert-error">{message}</div>}
 
+      {/*  connection warning */}
+      {connectionLost && (
+        <div className="alert alert-error">
+          <b>Connection problem.</b> We cannot reach the server. Check your internet. If it is not
+          back within {secondsUntilAutoSubmit} seconds, your quiz will be submitted automatically.
+        </div>
+      )}
+
+      {/*  idle notice (informational only) */}
+      {showIdle && (
+        <div className="alert alert-warn">
+          <b>Still there?</b> You have not done anything for {idleSeconds} seconds. Your timer is
+          still running ({formatDuration(remaining)} left).
+        </div>
+      )}
+
       <div className="attempt-layout">
         <div className="card">
-          <div className="q-counter">
-            Question {current + 1} of {questions.length}
+          <div className="question-head">
+            <div className="q-counter" style={{ marginBottom: 0 }}>
+              Question {current + 1} of {questions.length}
+            </div>
+            <button
+                type="button"
+                className={`btn btn-sm mark-btn ${marked[current] ? 'on' : ''}`}
+                onClick={() => toggleMark(current)}
+                disabled={selected.length > 0}
+                title={selected.length > 0 ? 'Clear your response to mark this for review' : ''}
+                >
+                <Flag size={15} /> {marked[current] ? 'Marked for review' : 'Mark for review'}
+            </button>
           </div>
 
-          <p className="q-text">{q.text}</p>
+          <p className="q-text" style={{ marginTop: 12 }}>
+            {q.text}
+          </p>
 
           {q.image && (
             <img
@@ -265,7 +367,7 @@ const AttemptScreen = ({ quizId, data }) => {
         <div className="card">
           <b>Questions</b>
           <p className="hint" style={{ marginTop: 4 }}>
-            {answeredCount} of {questions.length} answered
+            {answeredCount} answered · {markedCount} marked for review
           </p>
 
           <div className="palette-grid">
@@ -273,14 +375,16 @@ const AttemptScreen = ({ quizId, data }) => {
               <button
                 key={i}
                 className={`palette-btn ${(answers[i] || []).length > 0 ? 'answered' : ''} ${
-                  i === current ? 'current' : ''
-                }`}
+                  marked[i] ? 'marked' : ''
+                } ${i === current ? 'current' : ''}`}
                 onClick={() => setCurrent(i)}
               >
                 {i + 1}
               </button>
             ))}
           </div>
+
+          <PaletteLegend />
 
           <button
             className="btn btn-primary btn-block"
