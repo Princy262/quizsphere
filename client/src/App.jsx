@@ -6,8 +6,10 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import ExaminerDashboard from './pages/examiner/ExaminerDashboard.jsx';
 import MyQuizzes from './pages/examiner/MyQuizzes.jsx';
-import StudentDashboard from './pages/student/StudentDashboard.jsx';
 import CreateQuiz from './pages/examiner/CreateQuiz.jsx';
+import EditQuiz from './pages/examiner/EditQuiz.jsx';
+import QuizLeaderboard from './pages/examiner/QuizLeaderboard.jsx';
+import StudentDashboard from './pages/student/StudentDashboard.jsx';
 
 const HomeRedirect = () => {
   const { user, loading } = useAuth();
@@ -30,7 +32,7 @@ const App = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Examiner pages: must be logged in as examiner, shown inside the sidebar layout */}
+      {/* Examiner pages */}
       <Route
         element={
           <ProtectedRoute role="examiner">
@@ -41,14 +43,11 @@ const App = () => {
         <Route path="/examiner" element={<ExaminerDashboard />} />
         <Route path="/examiner/quizzes" element={<MyQuizzes />} />
         <Route path="/examiner/quizzes/new" element={<CreateQuiz />} />
-        <Route path="/examiner/quizzes/:id/edit" element={<Placeholder title="Edit Quiz" />} />
-        <Route
-          path="/examiner/quizzes/:id/leaderboard"
-          element={<Placeholder title="Leaderboard" />}
-        />
+        <Route path="/examiner/quizzes/:id/edit" element={<EditQuiz />} />
+        <Route path="/examiner/quizzes/:id/leaderboard" element={<QuizLeaderboard />} />
       </Route>
 
-      {/* Student pages: must be logged in as student */}
+      {/* Student pages */}
       <Route
         element={
           <ProtectedRoute role="student">

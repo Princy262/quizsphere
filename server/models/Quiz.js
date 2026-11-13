@@ -6,6 +6,12 @@ const questionSchema = new mongoose.Schema({
     required: [true, 'Question text is required'],
     trim: true,
   },
+  // optional picture (e.g. a circuit diagram). Stored as an Image id.
+  image: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Image',
+    default: null,
+  },
   options: {
     type: [{ type: String, trim: true }],
     validate: [

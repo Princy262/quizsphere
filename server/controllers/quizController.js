@@ -1,5 +1,6 @@
 import Quiz from '../models/Quiz.js';
 import Attempt from '../models/Attempt.js';
+import Image from '../models/Image.js';
 
 // Fields an examiner is allowed to set. createdBy is NOT in this list.
 const EDITABLE_FIELDS = ['title', 'description', 'category', 'timeLimit', 'questions'];
@@ -19,6 +20,7 @@ const fingerprint = (questions) =>
   JSON.stringify(
     (questions || []).map((q) => ({
       text: String(q?.text ?? '').trim(),
+      image: String(q?.image ?? ''),
       options: (q?.options || []).map((o) => String(o).trim()),
       correctAnswers: [...(q?.correctAnswers || [])].sort((a, b) => a - b),
     }))
@@ -104,20 +106,24 @@ export const updateQuiz = async (req, res, next) => {
 };
 
 // @route   DELETE /api/examiner/quizzes/:id
-// Also deletes every attempt made on this quiz
+// Also deletes every attempt and every image of this quiz
 export const deleteQuiz = async (req, res, next) => {
   try {
     const quiz = await findOwnedQuiz(req.params.id, req.user.id, res);
 
+    const imageIds = quiz.questions.map((q) => q.image).filter(Boolean);
+
     await Attempt.deleteMany({ quiz: quiz._id });
+    if (imageIds.length > 0) {
+      await Image.deleteMany({ _id: { $in: imageIds } });
+    }
     await quiz.deleteOne();
 
-    res.json({ message: 'Quiz and its attempts deleted' });
+    res.json({ message: 'Quiz, its attempts and images deleted' });
   } catch (error) {
     next(error);
   }
 };
-
 // @route   GET /api/examiner/categories
 // Every category used by ANY examiner's quiz (not just this examiner's)
 export const getAllCategories = async (req, res, next) => {

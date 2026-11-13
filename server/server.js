@@ -7,6 +7,7 @@ import examinerRoutes from './routes/examinerRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 import { startAttemptSweeper } from './utils/attemptSweeper.js';
+import imageRoutes from './routes/imageRoutes.js';
 
 // Wait for the database before doing anything else
 await connectDB();
@@ -23,6 +24,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/examiner', examinerRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api/images', imageRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

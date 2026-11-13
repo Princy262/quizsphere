@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import Attempt, { MAX_ATTEMPTS } from '../models/Attempt.js';
 import Quiz from '../models/Quiz.js';
 import { normalizeSelection } from '../utils/scoring.js';
-import { pickBest } from '../utils/attemptStats.js'; 
+import { pickBest } from '../utils/attemptStats.js';
 import {
   finalizeAttempt,
   getDeadline,
@@ -151,17 +151,18 @@ export const startAttempt = async (req, res, next) => {
         title: quiz.title,
         category: quiz.category,
         timeLimit: quiz.timeLimit,
-        // ⭐ NEW: MSQ info for the frontend
+        // MSQ info for the frontend
         hasMSQ: msqCount > 0,
         msqCount,
         msqNote:
           msqCount > 0
             ? 'This quiz contains MSQ (multiple correct answer) questions'
             : null,
-        // Question text and options only. No correctAnswers.
+        // Question text, image and options only. No correctAnswers.
         questions: quiz.questions.map((q, index) => ({
           questionIndex: index,
           text: q.text,
+          image: q.image || null, // ⭐ NEW
           options: q.options,
           multiple: q.correctAnswers.length > 1, // checkboxes vs radio buttons
         })),
@@ -354,7 +355,7 @@ export const leaveAttempt = async (req, res, next) => {
   }
 };
 
-// ---------- history and review ---------- // ⭐ NEW (everything below)
+// ---------- history and review ----------
 
 // Closes this student's running attempt on a quiz if its time already ran out,
 // so it is counted before we show history or decide about the review
@@ -484,6 +485,7 @@ export const reviewAnswers = async (req, res, next) => {
     const questions = quiz.questions.map((q, index) => ({
       questionIndex: index,
       text: q.text,
+      image: q.image || null, 
       options: q.options,
       correctAnswers: q.correctAnswers,
       multiple: q.correctAnswers.length > 1,

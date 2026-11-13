@@ -30,6 +30,18 @@ export const errorHandler = (err, req, res, next) => {
     message = 'Invalid ID format';
   }
 
+    // Errors that carry their own status (e.g. wrong image type)
+  if (err.statusCode) {
+    statusCode = err.statusCode;
+  }
+
+  // Multer errors (file too large, etc.)
+  if (err.name === 'MulterError') {
+    statusCode = 400;
+    message =
+      err.code === 'LIMIT_FILE_SIZE' ? 'Image is too large (maximum 2 MB)' : err.message;
+  }
+
   res.status(statusCode).json({
     message,
     stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,

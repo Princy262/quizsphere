@@ -10,6 +10,8 @@ import {
   getAllCategories,
 } from '../controllers/quizController.js';
 import { getLeaderboard } from '../controllers/leaderboardController.js';
+import { uploadSingleImage } from '../middleware/uploadMiddleware.js';
+import { uploadImage } from '../controllers/imageController.js';
 
 
 const router = express.Router();
@@ -21,6 +23,7 @@ router.get('/ping', (req, res) => {
   res.json({ message: `Hello examiner ${req.user.name}` });
 });
 router.get('/categories', getAllCategories);
+router.post('/images', uploadSingleImage, uploadImage);
 
 router.route('/quizzes').post(createQuiz).get(getMyQuizzes);
 

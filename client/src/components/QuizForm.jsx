@@ -1,10 +1,19 @@
-import { useEffect, useState } from 'react';
-import { Plus, X, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Plus, X, Trash2, ImagePlus } from 'lucide-react';
 import api, { getErrorMessage } from '../api/axios.js';
+import { imageUrl } from '../utils/imageUrl.js';
 
-const emptyQuestion = () => ({ text: '', options: ['', ''], correctAnswers: [] });
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 
-// Used by Create Quiz now, and by Edit Quiz later.
+const emptyQuestion = () => ({
+  text: '',
+  image: null,
+  options: ['', ''],
+  correctAnswers: [],
+});
+
+// Used by Create Quiz and Edit Quiz.
 // onSubmit(payload) should throw if saving fails.
 const QuizForm = ({ initial, onSubmit, submitLabel = 'Save Quiz' }) => {
   const [title, setTitle] = useState(initial?.title ?? '');
@@ -12,12 +21,16 @@ const QuizForm = ({ initial, onSubmit, submitLabel = 'Save Quiz' }) => {
   const [category, setCategory] = useState(initial?.category ?? '');
   const [timeLimit, setTimeLimit] = useState(initial?.timeLimit ?? '');
   const [questions, setQuestions] = useState(
-    initial?.questions?.length ? initial.questions : [emptyQuestion()]
+    initial?.questions?.length
+      ? initial.questions.map((q) => ({ ...q, image: q.image || null }))
+      : [emptyQuestion()]
   );
 
   const [suggestions, setSuggestions] = useState([]);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState(null);
+  const fileInputs = useRef({});
 
   // Existing categories, offered as suggestions (a new one can still be typed)
   useEffect(() => {
@@ -69,6 +82,46 @@ const QuizForm = ({ initial, onSubmit, submitLabel = 'Save Quiz' }) => {
     updateQuestion(qi, { correctAnswers: next });
   };
 
+  // ---------- images ----------
+  const uploadImage = async (qi, file) => {
+    if (!file) return;
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setError('Only PNG, JPG, WEBP or GIF images are allowed');
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError('Image is too large. Maximum size is 2 MB');
+      return;
+    }
+
+    setError('');
+    setUploadingIndex(qi);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      // Do not set Content-Type by hand: the browser adds it with the boundary
+      const { data } = await api.post('/examiner/images', formData);
+      updateQuestion(qi, { image: data.imageId });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
+
+  // Ctrl+V anywhere inside a question card pastes the image into that question
+  const handlePaste = (qi, e) => {
+    const items = Array.from(e.clipboardData?.items || []);
+    const imageItem = items.find(
+      (item) => item.kind === 'file' && item.type.startsWith('image/')
+    );
+    if (!imageItem) return; // normal text paste, leave it alone
+
+    e.preventDefault();
+    uploadImage(qi, imageItem.getAsFile());
+  };
+
   // ---------- validation + submit ----------
   const validate = () => {
     if (!title.trim()) return 'Quiz title is required';
@@ -94,6 +147,11 @@ const QuizForm = ({ initial, onSubmit, submitLabel = 'Save Quiz' }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (uploadingIndex !== null) {
+      setError('Please wait for the image to finish uploading');
+      return;
+    }
+
     const problem = validate();
     if (problem) {
       setError(problem);
@@ -111,6 +169,7 @@ const QuizForm = ({ initial, onSubmit, submitLabel = 'Save Quiz' }) => {
         timeLimit: Number(timeLimit),
         questions: questions.map((q) => ({
           text: q.text.trim(),
+          image: q.image || null,
           options: q.options.map((o) => o.trim()),
           correctAnswers: q.correctAnswers,
         })),
@@ -187,7 +246,11 @@ const QuizForm = ({ initial, onSubmit, submitLabel = 'Save Quiz' }) => {
       </div>
 
       {questions.map((q, qi) => (
-        <div className="card question-card" key={qi}>
+        <div
+          className="card question-card"
+          key={qi}
+          onPaste={(e) => handlePaste(qi, e)}
+        >
           <div className="question-head">
             <h3>
               Question {qi + 1}
@@ -210,6 +273,50 @@ const QuizForm = ({ initial, onSubmit, submitLabel = 'Save Quiz' }) => {
             onChange={(e) => updateQuestion(qi, { text: e.target.value })}
             placeholder="Type the question"
           />
+
+          {/* ----- question image ----- */}
+          <div className="image-area">
+            {q.image ? (
+              <div className="image-preview">
+                <img src={imageUrl(q.image)} alt={`Question ${qi + 1}`} />
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => updateQuestion(qi, { image: null })}
+                >
+                  <Trash2 size={15} /> Remove image
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => fileInputs.current[qi]?.click()}
+                disabled={uploadingIndex === qi}
+              >
+                <ImagePlus size={16} />
+                {uploadingIndex === qi ? 'Uploading...' : 'Add image'}
+              </button>
+            )}
+
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              hidden
+              ref={(el) => (fileInputs.current[qi] = el)}
+              onChange={(e) => {
+                uploadImage(qi, e.target.files[0]);
+                e.target.value = ''; // lets the same file be picked again
+              }}
+            />
+
+            {!q.image && (
+              <p className="hint">
+                Or copy an image and press Ctrl+V inside this question. PNG, JPG, WEBP or GIF, up
+                to 2 MB.
+              </p>
+            )}
+          </div>
 
           <p className="hint">
             Tick every correct option. Tick more than one to make it an MSQ.
@@ -268,7 +375,7 @@ const QuizForm = ({ initial, onSubmit, submitLabel = 'Save Quiz' }) => {
       </button>
 
       <div className="form-actions">
-        <button className="btn btn-primary" disabled={submitting}>
+        <button className="btn btn-primary" disabled={submitting || uploadingIndex !== null}>
           {submitting ? 'Saving...' : submitLabel}
         </button>
       </div>

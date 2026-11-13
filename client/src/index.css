@@ -820,3 +820,98 @@ h3 {
     flex-wrap: wrap;
   }
 }
+
+/* =========================================================
+   LEADERBOARD TABLE
+   ========================================================= */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+.table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table tbody tr:hover {
+  background: rgba(var(--shadow-rgb), 0.04);
+}
+
+.student-name {
+  font-weight: 600;
+}
+
+.small {
+  font-size: 0.8rem;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 38px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  background: rgba(var(--shadow-rgb), 0.08);
+}
+
+.rank-1 {
+  color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #fcd34d);
+}
+
+.rank-2 {
+  color: #fff;
+  background: linear-gradient(135deg, #78909c, #b0bec5);
+}
+
+.rank-3 {
+  color: #fff;
+  background: linear-gradient(135deg, #a1612b, #d99a63);
+}
+
+/* ---------- question images ---------- */
+.image-area {
+  margin-top: 12px;
+}
+
+.image-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.image-preview img,
+.question-image {
+  max-width: 100%;
+  max-height: 340px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  object-fit: contain;
+}
