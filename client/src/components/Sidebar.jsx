@@ -1,6 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  CheckCircle2,
   LayoutDashboard,
   ClipboardList,
   PlusSquare,
@@ -8,6 +7,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+   import logo from '../assets/logo/logo.png';
 
 // To add a page to the sidebar, add one line here
 const NAV = {
@@ -33,12 +33,9 @@ const Sidebar = () => {
 
   return (
     <aside className="sidebar">
-      <div className="logo">
-        <span className="logo-icon">
-          <CheckCircle2 size={22} />
-        </span>
-        QuizSphere
-      </div>
+        <div className="logo">
+          <img src={logo} alt="QuizSphere" className="brand-logo" />
+        </div>
 
       <nav className="nav-links">
         {NAV[user.role].map(({ to, label, icon: Icon }) => (

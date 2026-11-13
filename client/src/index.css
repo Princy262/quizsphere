@@ -439,11 +439,9 @@ h3 {
     flex-wrap: wrap;
     gap: 8px;
   }
-
   .sidebar .logo {
-    padding: 0 8px;
+    padding: 4px 4px 22px;
   }
-
   .nav-links {
     flex-direction: row;
     flex-wrap: wrap;
@@ -684,4 +682,21 @@ h3 {
 .select {
   padding-left: 38px;
   cursor: pointer;
+}
+
+/* ---------- logo images ---------- */
+.brand-logo {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.auth-logo {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }

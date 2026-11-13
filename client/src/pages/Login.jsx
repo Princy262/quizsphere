@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getErrorMessage } from '../api/axios.js';
 import { dashboardPath } from '../components/ProtectedRoute.jsx';
 import { useTheme } from '../utils/useTheme.js';
 import PasswordInput from '../components/PasswordInput.jsx';
+import logo from '../assets/logo/logo.png';
 
 const Login = () => {
   useTheme('neutral'); // keep hooks above any early return
@@ -38,12 +38,9 @@ const Login = () => {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="logo">
-          <span className="logo-icon">
-            <CheckCircle2 size={22} />
-          </span>
-          QuizSphere
-        </div>
+          <div className="logo">
+            <img src={logo} alt="QuizSphere" className="auth-logo" />
+          </div>
         <h2 className="auth-title">Welcome back</h2>
         <p className="auth-sub">Log in to continue</p>
 
