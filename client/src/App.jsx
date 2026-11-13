@@ -57,6 +57,7 @@ const App = () => {
       >
         <Route path="/student" element={<StudentDashboard />} />
         <Route path="/student/results" element={<Placeholder title="My Results" />} />
+        <Route path="/student/quizzes/:id" element={<Placeholder title="Quiz Details" />} />
       </Route>
 
       <Route path="*" element={<HomeRedirect />} />

@@ -915,3 +915,94 @@ h3 {
   background: #fff;
   object-fit: contain;
 }
+
+/* =========================================================
+   STUDENT: quiz cards
+   ========================================================= */
+.attempt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.85rem;
+}
+
+.attempt-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.dot.used {
+  background: var(--grad-primary);
+}
+
+.best-score {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.msq-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.btn-full {
+  width: 100%;
+  text-decoration: none;
+}
+/* ---------- hover tooltip (used by the MSQ tag) ---------- */
+.has-tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.has-tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.15s, transform 0.15s;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.has-tooltip:hover::after,
+.has-tooltip:focus::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
