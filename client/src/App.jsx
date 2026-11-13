@@ -10,6 +10,7 @@ import CreateQuiz from './pages/examiner/CreateQuiz.jsx';
 import EditQuiz from './pages/examiner/EditQuiz.jsx';
 import QuizLeaderboard from './pages/examiner/QuizLeaderboard.jsx';
 import StudentDashboard from './pages/student/StudentDashboard.jsx';
+import QuizDetails from './pages/student/QuizDetails.jsx';
 
 const HomeRedirect = () => {
   const { user, loading } = useAuth();
@@ -57,7 +58,8 @@ const App = () => {
       >
         <Route path="/student" element={<StudentDashboard />} />
         <Route path="/student/results" element={<Placeholder title="My Results" />} />
-        <Route path="/student/quizzes/:id" element={<Placeholder title="Quiz Details" />} />
+        <Route path="/student/quizzes/:id" element={<QuizDetails />} />
+        <Route path="/student/quizzes/:id/review" element={<Placeholder title="Correct Answers" />} />
       </Route>
 
       <Route path="*" element={<HomeRedirect />} />
