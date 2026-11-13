@@ -162,9 +162,8 @@ export const startAttempt = async (req, res, next) => {
         questions: quiz.questions.map((q, index) => ({
           questionIndex: index,
           text: q.text,
-          image: q.image || null, // ⭐ NEW
+          image: q.image || null, 
           options: q.options,
-          multiple: q.correctAnswers.length > 1, // checkboxes vs radio buttons
         })),
       },
     });

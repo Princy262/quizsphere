@@ -154,7 +154,7 @@ const QuizDetails = () => {
         )}
 
         {history.canReviewAnswers && (
-          <Link to={`/student/quizzes/${id}/review`} className="btn btn-secondary">
+          <Link to={`/student/quizzes/${id}/answers`} className="btn btn-secondary">
             <Eye size={17} /> View Correct Answers
           </Link>
         )}
@@ -178,6 +178,7 @@ const QuizDetails = () => {
                   <th>Score</th>
                   <th>Time taken</th>
                   <th>How it ended</th>
+                  {history.canReviewAnswers && <th>See response</th>}
                 </tr>
               </thead>
               <tbody>
@@ -195,6 +196,16 @@ const QuizDetails = () => {
                           {label.text}
                         </span>
                       </td>
+                      {history.canReviewAnswers && (
+                        <td>
+                          <Link
+                            to={`/student/quizzes/${id}/review?attempt=${a.attemptNumber}`}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            <Eye size={14} /> See response
+                          </Link>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

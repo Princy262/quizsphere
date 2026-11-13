@@ -11,6 +11,10 @@ import EditQuiz from './pages/examiner/EditQuiz.jsx';
 import QuizLeaderboard from './pages/examiner/QuizLeaderboard.jsx';
 import StudentDashboard from './pages/student/StudentDashboard.jsx';
 import QuizDetails from './pages/student/QuizDetails.jsx';
+import AttemptQuiz from './pages/student/AttemptQuiz.jsx';
+import ResultPage from './pages/student/ResultPage.jsx';
+import ReviewAnswers from './pages/student/ReviewAnswers.jsx';
+import AnswerKey from './pages/student/AnswerKey.jsx';
 
 const HomeRedirect = () => {
   const { user, loading } = useAuth();
@@ -48,7 +52,17 @@ const App = () => {
         <Route path="/examiner/quizzes/:id/leaderboard" element={<QuizLeaderboard />} />
       </Route>
 
-      {/* Student pages */}
+      {/* Quiz-taking screen: student only, NO sidebar */}
+      <Route
+        path="/student/quizzes/:id/attempt"
+        element={
+          <ProtectedRoute role="student">
+            <AttemptQuiz />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Other student pages (with sidebar) */}
       <Route
         element={
           <ProtectedRoute role="student">
@@ -59,7 +73,9 @@ const App = () => {
         <Route path="/student" element={<StudentDashboard />} />
         <Route path="/student/results" element={<Placeholder title="My Results" />} />
         <Route path="/student/quizzes/:id" element={<QuizDetails />} />
-        <Route path="/student/quizzes/:id/review" element={<Placeholder title="Correct Answers" />} />
+        <Route path="/student/quizzes/:id/result" element={<ResultPage />} />
+        <Route path="/student/quizzes/:id/review" element={<ReviewAnswers />} />
+        <Route path="/student/quizzes/:id/answers" element={<AnswerKey />} />
       </Route>
 
       <Route path="*" element={<HomeRedirect />} />
