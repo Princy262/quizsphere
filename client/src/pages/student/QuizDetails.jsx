@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Clock, HelpCircle, AlertTriangle, Play, Eye } from 'lucide-react';
 import api, { getErrorMessage } from '../../api/axios.js';
 import { formatDuration } from '../../utils/formatTime.js';
+import AttemptChart from '../../components/AttemptChart.jsx';
 
 const STATUS_LABEL = {
   submitted: { text: 'Submitted', warn: false },
@@ -213,6 +214,21 @@ const QuizDetails = () => {
             </table>
           </div>
         </div>
+      )}
+
+      {/*  private attempt graph */}
+      {history.attempts.length > 0 && (
+        <>
+          <div className="section-head" style={{ marginTop: 28 }}>
+            <h2>Your progress</h2>
+          </div>
+          <div className="card">
+            <AttemptChart data={history.chartData} maxScore={quiz.questionCount} />
+            <p className="hint" style={{ marginBottom: 0 }}>
+              Only you can see this graph.
+            </p>
+          </div>
+        </>
       )}
     </div>
   );
